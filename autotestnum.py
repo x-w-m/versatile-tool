@@ -16,6 +16,7 @@ df_student.sort_values(by=["科目组", "分数"], ascending=[True, False], inpl
 
 
 def mode_for_one():
+    kshp = input("请输入考生号前缀：")
     # 定义一个列表，用于保存已经编排好的考生信息。
     rows = []
 
@@ -31,6 +32,7 @@ def mode_for_one():
             # 获取该考室的编号和人数
             room_number = row["考室号"]
             room_size = row["人数"]
+            room_position = row["楼层"]
             # 筛选出该考室需要安排的学生
             df_student_room = df_student_group.iloc[count:count + room_size]
             # 给每个学生分配座位号，并生成考号
@@ -42,7 +44,8 @@ def mode_for_one():
                 # 或者将被修改的行“r”保存到列表中，最后将其转换为新的DataFrame对象。
                 r["座位号"] = str(seat_number).zfill(2)  # 座位号用两位数表示，不足补零
                 r["考室号"] = str(room_number).zfill(2).zfill(2)
-                r["考生号"] = "1000" + str(room_number).zfill(2) + str(seat_number).zfill(2)  # 考号由“1000”、考室号、座位号拼接而成
+                r["考生号"] = kshp + str(room_number).zfill(2) + str(seat_number).zfill(2)  # 考号由“1000”、考室号、座位号拼接而成
+                r["楼层"] = room_position
 
                 # 使用.loc[]方法来定位行和列，从而直接修改DataFrame对象中的值。
                 # 此方法会出现SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame.
@@ -83,8 +86,8 @@ if __name__ == '__main__':
     # 使用提示
     print("# 自动编排考号")
     print("# 需准备\"考室安排表.xlsx\"及\"参考名单表.xlsx\"两个表。")
-    print("# 考室安排表需要有三列：考室号、人数、科目组。")
-    print("# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成三列：考生号、考室号、座位号。")
+    print("# 考室安排表需要有三列：考室号、楼层、人数、科目组。")
+    print("# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成三列：考生号、考室号、座位号、楼层。")
 
     # 模式选择
     mode = input("准备好后请使用数字键选择模式：\n1：简单科目组模式；\n2：实验班指定考室模式。\n")
