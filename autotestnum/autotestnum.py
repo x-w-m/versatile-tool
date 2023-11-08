@@ -19,6 +19,8 @@ def mode_for_one():
     kshp = input("请输入考生号前缀：")
     # 定义一个列表，用于保存已经编排好的考生信息。
     rows = []
+    # 新建一个字典，用于跟踪每个考室已经分配的最后一个座位号
+    room_seat_tracker = {}
 
     # 遍历每个科目组
     for group in df_room["科目组"].unique():
@@ -28,22 +30,30 @@ def mode_for_one():
         # 初始化一个变量，用于记录已经安排了多少个学生
         count = 0
         # 遍历该科目组对应的每个考室
-        for index, row in df_room_group.iterrows():
+        for index, room_row in df_room_group.iterrows():
             # 获取该考室的编号和人数
-            room_number = row["考室号"]
-            room_size = row["人数"]
-            room_position = row["楼层"]
+            room_number = room_row["考室号"]
+            room_size = room_row["人数"]
+            room_position = room_row["楼层"]
+
+            # 如果考室号在tracker中没有记录，说明是新的考室或者新的科目组的开始，座位号从1开始
+            if room_number not in room_seat_tracker:
+                room_seat_tracker[room_number] = 0
+
+            # 从之前的座位号继续开始分配
+            start_seat_number = room_seat_tracker[room_number] + 1
+
             # 筛选出该考室需要安排的学生
             df_student_room = df_student_group.iloc[count:count + room_size]
             # 给每个学生分配座位号，并生成考号
-            seat_number = 1
+            seat_number = start_seat_number  # 设置本次循环开始时的座位号。
             for i, r in df_student_room.iterrows():
                 # 在迭代过程中，r是一个Series对象，它是从df_student_room中复制出来的一行数据，
                 # 对r所做的修改不会反映到原始的DataFrame对象df_student_room中。
                 # 想要修改原始的DataFrame对象，可以使用.loc[]方法来定位行和列，并直接修改DataFrame对象中的值。
                 # 或者将被修改的行“r”保存到列表中，最后将其转换为新的DataFrame对象。
                 r["座位号"] = str(seat_number).zfill(2)  # 座位号用两位数表示，不足补零
-                r["考室号"] = str(room_number).zfill(2).zfill(2)
+                r["考室号"] = str(room_number).zfill(2)
                 r["考生号"] = kshp + str(room_number).zfill(2) + str(seat_number).zfill(2)  # 考号由“1000”、考室号、座位号拼接而成
                 r["楼层"] = room_position
 
@@ -61,6 +71,8 @@ def mode_for_one():
                 rows.append(r)
             # 将该考室安排好的学生添加到结果中
             # df_result = pd.concat([df_result, df_student_room])
+            # 更新该考室的最后一个座位号
+            room_seat_tracker[room_number] = seat_number - 1
             # 更新已经安排了多少个学生的变量
             count += room_size
 
@@ -76,74 +88,6 @@ def mode_for_one():
 
     # 打印一条提示信息，表示程序运行结束
     print("程序运行结束，已经生成“考生去向表.xlsx”文件，请查看。")
-
-
-def mode_for_one_mixed():
-    kshp = input("请输入考生号前缀：")
-    # 定义一个列表，用于保存已经编排好的考生信息。
-    rows = []
-
-    # 定义一个字典来存储每个混合考室的当前座位号
-    mixed_room_seats = {}
-
-    # 先识别哪些考室是混合考室，并记录它们的科目组和初始座位号
-    for _, room in df_room.iterrows():
-        subject_groups = room["科目组"].split(',')
-        if len(subject_groups) > 1:
-            mixed_room_seats[room["考室号"]] = 1
-
-    # 遍历每个科目组
-    for group in df_room["科目组"].unique():
-        df_student_group = df_student[df_student["科目组"] == group]
-        for _, room in df_room.iterrows():
-            room_number = room["考室号"]
-            room_size = room["人数"]
-            room_position = room["楼层"]
-            subject_groups = room["科目组"].split(',')
-
-            if group not in subject_groups:
-                continue
-
-            # 如果这是混合考室，从字典中获取当前座位号
-            if room_number in mixed_room_seats:
-                seat_number = mixed_room_seats[room_number]
-            else:
-                seat_number = 1
-
-            # 根据考室容量和已经分配的座位号，计算这个科目组可以安排的学生数
-            group_size = min(len(df_student_group), room_size - seat_number + 1)
-            df_student_room = df_student_group.iloc[:group_size]
-            df_student_group = df_student_group.iloc[group_size:]
-
-            for i, r in df_student_room.iterrows():
-                r["座位号"] = str(seat_number).zfill(2)  # 座位号用两位数表示，不足补零
-                r["考室号"] = str(room_number).zfill(2)
-                r["考生号"] = kshp + str(room_number).zfill(2) + str(seat_number).zfill(2)  # 考号由前缀、考室号、座位号拼接而成
-                r["楼层"] = room_position
-                seat_number += 1
-                # 将编排后的行添加到列表中
-                rows.append(r)
-
-            # 更新混合考室的座位号
-            if room_number in mixed_room_seats:
-                mixed_room_seats[room_number] = seat_number
-
-    # 将rows列表转换为DataFrame对象，用于存储最终的结果。
-    df_result = pd.DataFrame(rows, columns=df_student.columns, dtype=str)
-
-    # 将结果按照班级、姓名进行排序，并重置索引
-    df_result.sort_values(by=["班级", "考生号"], inplace=True)
-    df_result.reset_index(drop=True, inplace=True)
-
-    # 将结果保存为一个新的excel文件，命名为“考生去向表_mixed.xlsx”
-    df_result.to_excel("考生去向表_mixed.xlsx", index=False)
-
-    # 打印一条提示信息，表示程序运行结束
-    print("程序运行结束，已经生成“考生去向表_mixed.xlsx”文件，请查看。")
-
-
-# Temporarily replace the original function with the mixed version for demonstration
-mode_for_one = mode_for_one_mixed
 
 
 def mode_for_two():
