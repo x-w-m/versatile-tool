@@ -5,14 +5,14 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 
 
-def generate_honor_table():
+def generate_honor_table(excel_file):
     # 设置控制台的宽度和每列数据的最大宽度，None表示不限制
     pd.set_option('display.max_columns', None)
     pd.set_option('display.max_rows', None)
     pd.set_option('display.width', None)
 
     # 读取Excel表格，跳过前三行
-    df = pd.read_excel('2023年10月高一联考班级成绩.xlsx', header=None, skiprows=3)
+    df = pd.read_excel(excel_file, header=None, skiprows=3)
 
     # 获取表格第一行、第二行和第三行作为标题
     headers = ['班级', '姓名', '考号', '总分', '班排名', '校排名', '语文', '数学', '外语', '物理', '化学', '生物',
@@ -47,22 +47,26 @@ def generate_honor_table():
         subject_max = df[subject].max()
         # 获取最高分对应的学生信息
         temp = df[['班级', '姓名', subject]].loc[df[subject] == subject_max]
-        # 添加科目列
+        # 添加科目列，value为单个值时会被广播到整列
         temp.insert(0, '科目', subject)
         # 重命名列名
         temp.columns = ['科目', '班级', '姓名', '分数']
-        # 将结果添加到结果 DataFrame 中
-        school_max = pd.concat([school_max, temp])
 
-    # 各班单科王
-    # 选择需要的列，包括科目、班级、姓名和分数
-    school_max = school_max[['科目', '班级', '姓名', '分数']]
+        # # 移除空或全部为 NA 的列
+        # school_max = school_max.dropna(axis=1, how='all')
+        # 将结果添加到结果 DataFrame 中,使用
+        if school_max.empty:
+            school_max = temp
+        else:
+            school_max = pd.concat([school_max, temp])
+
     # 重置索引，reset_index会将索引转为普通列，需要使用drop=True来删除，不然数据会多出一列。
     school_max.reset_index(inplace=True, drop=True)
-    school_max.to_excel('班级单科王.xlsx', index=False, header=['科目', '班级', '姓名', '分数'])
+    school_max.to_excel('全校单科王.xlsx', index=False, header=['科目', '班级', '姓名', '分数'])
 
-    # 按班级分组，并获取每个班级语文的最高分
-    class_max = df.groupby('班级')[['语文', '数学', '外语', '物理', '化学', '生物', '政治', '历史', '地理']].max()
+    # 按班级分组，并获取每个班级语文的最高分,sort默认为True，会对结果进行排序。
+    class_max = df.groupby('班级', sort=True)[
+        ['语文', '数学', '外语', '物理', '化学', '生物', '政治', '历史', '地理']].max()
 
     # 对每个班级进行聚合操作，按不同科目进行遍历，将每个科目最高分对应的学生姓名使用换行符连接成一个字符串。
     bdankewang = pd.DataFrame()
@@ -70,14 +74,17 @@ def generate_honor_table():
         temp = class_max.reset_index().merge(df, on=['班级', subject]).loc[:, ['班级', '姓名', subject]].groupby(
             ['班级', subject])[
             '姓名'].agg('\n'.join).reset_index()
-        temp.columns = ['班级', '姓名', subject]
+
+        # 重新设置列顺序
+        new_order = ['班级', '姓名', subject]
+        temp = temp[new_order]
         bdankewang = pd.concat([bdankewang, temp], axis=1)
 
     # 将结果保存为新表格
     bdankewang.to_excel('最高分.xlsx', index=False)
 
     # 创建一个 ExcelWriter 对象，指定要保存的文件名
-    writer = pd.ExcelWriter('光荣榜.xlsx')
+    writer = pd.ExcelWriter(excel_file.split('.')[0] + '光荣榜.xlsx')
     top_52.to_excel(writer, sheet_name='浪尖起舞', index=False)
     top_1000.to_excel(writer, sheet_name="总分优胜", index=False)
     top_10.to_excel(writer, sheet_name="班级前10", index=False)
@@ -125,5 +132,6 @@ def modify_format():
 
 
 if __name__ == '__main__':
-    generate_honor_table()
+    excel_file = '2023年11月高一期中班级成绩.xlsx'
+    generate_honor_table(excel_file)
     modify_format()

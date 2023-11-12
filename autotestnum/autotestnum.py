@@ -1,7 +1,7 @@
 # 自动编排考号
 # 需准备考室安排表及参考名单表两个表。
 # 考室安排表需要有三列：考室号、楼层、人数、科目组。
-# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成三列：考生号、考室号、座位号、楼层。
+# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成四列：考生号、考室号、座位号、楼层。
 
 
 # 导入所需的库
@@ -91,7 +91,60 @@ def mode_for_one():
 
 
 def mode_for_two():
-    pass
+    # Prompt user for the names of the experimental classes
+    experimental_classes = input("请输入实验班班级名称，多个班级使用“、”分隔：").split("、")
+    # Prompt user for the corresponding rooms
+    assigned_rooms = input("请输入需要安排到的考室，多个考室使用“、”分隔：").split("、")
+    kshp = input("请输入考生号前缀：")
+    # Assuming the data consistency is already ensured, proceed with the assignment
+    # Define a list to save the arranged student information
+    rows = []
+    # Initialize a dictionary to track the last seat number assigned in each room
+    room_seat_tracker = {}
+
+    # Iterate over the experimental classes and the corresponding rooms
+    for class_name, room_number in zip(experimental_classes, assigned_rooms):
+        # Filter the students belonging to the current experimental class
+        df_student_class = df_student[df_student["班级"] == class_name]
+        # Filter the room information for the current assigned room
+        df_room_assigned = df_room[df_room["考室号"] == room_number]
+
+        # If the room has not been assigned before, start seat numbering from 1
+        if room_number not in room_seat_tracker:
+            room_seat_tracker[room_number] = 0
+
+        # Continue seat assignment from the last seat number for this room
+        start_seat_number = room_seat_tracker[room_number] + 1
+
+        # Assign a seat number and generate exam number for each student
+        seat_number = start_seat_number
+        for index, student_row in df_student_class.iterrows():
+            # Assign seat number, room number, and exam number to the student
+            student_row["座位号"] = str(seat_number).zfill(2)  # Seat number with leading zero
+            student_row["考室号"] = str(room_number).zfill(2)  # Room number with leading zero
+            # Exam number consists of a prefix, room number, and seat number
+            student_row["考生号"] = kshp + str(room_number).zfill(2) + str(seat_number).zfill(2)
+            student_row["楼层"] = df_room_assigned.iloc[0]["楼层"]  # Assuming one floor per room
+
+            # Increment the seat number for the next student
+            seat_number += 1
+            # Append the arranged student information to the list
+            rows.append(student_row)
+
+        # Update the last seat number assigned in the room
+        room_seat_tracker[room_number] = seat_number - 1
+
+    # Convert the list of arranged students to a DataFrame
+    df_result = pd.DataFrame(rows, columns=df_student.columns, dtype=str)
+    # Sort the result by class and exam number, then reset the index
+    df_result.sort_values(by=["班级", "考生号"], inplace=True)
+    df_result.reset_index(drop=True, inplace=True)
+
+    # Save the result to a new Excel file
+    df_result.to_excel("考生去向表.xlsx", index=False)
+
+    # Print a message indicating the end of the process
+    print("程序运行结束，已经生成“考生去向表.xlsx”文件，请查看。")
 
 
 if __name__ == '__main__':
