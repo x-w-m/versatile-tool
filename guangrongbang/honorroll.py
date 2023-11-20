@@ -5,14 +5,14 @@ from openpyxl import load_workbook
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
 
 
-def generate_honor_table(excel_file):
+def generate_honor_table(file1, file2, file3):
     # 设置控制台的宽度和每列数据的最大宽度，None表示不限制
     pd.set_option('display.max_columns', None)
     pd.set_option('display.max_rows', None)
     pd.set_option('display.width', None)
 
     # 读取Excel表格，跳过前三行
-    df = pd.read_excel(excel_file, header=None, skiprows=3)
+    df = pd.read_excel(file2, header=None, skiprows=3)
 
     # 获取表格第一行、第二行和第三行作为标题
     headers = ['班级', '姓名', '考号', '总分', '班排名', '校排名', '语文', '数学', '外语', '物理', '化学', '生物',
@@ -81,12 +81,16 @@ def generate_honor_table(excel_file):
         bdankewang = pd.concat([bdankewang, temp], axis=1)
 
     # 将结果保存为新表格
-    bdankewang.to_excel('最高分.xlsx', index=False)
+    bdankewang.to_excel('班级单科王.xlsx', index=False)
+
+    # 进步之星
+    jinbuzhixing = jinbupaiming(file1, file2, file3)
 
     # 创建一个 ExcelWriter 对象，指定要保存的文件名
-    writer = pd.ExcelWriter(excel_file.split('.')[0] + '光荣榜.xlsx')
+    writer = pd.ExcelWriter(file2.split('.')[0] + '光荣榜.xlsx')
     top_52.to_excel(writer, sheet_name='浪尖起舞', index=False)
     top_1000.to_excel(writer, sheet_name="总分优胜", index=False)
+    jinbuzhixing.to_excel(writer, sheet_name='进步速度排名', index=False)
     top_10.to_excel(writer, sheet_name="班级前10", index=False)
     school_max.to_excel(writer, sheet_name="全校单科王", index=False)
     bdankewang.to_excel(writer, sheet_name='班级单科王', index=False)
@@ -131,7 +135,54 @@ def modify_format():
     wb.close()
 
 
+# 计算进步之星
+def jinbupaiming(file1, file2, file3):
+    # 定义列名
+    columns_scores = ['班级', '姓名', '考号', '总分', '班排名', '校排名', '语文', '数学', '外语', '物理', '化学',
+                      '生物', '政治', '历史', '地理']
+    # 读取数据，指定列名
+    df1 = pd.read_excel(file1, header=None, skiprows=3, names=columns_scores, dtype={'考号': str})
+    df2 = pd.read_excel(file2, header=None, skiprows=3, names=columns_scores, dtype={'考号': str})
+    df_mapping = pd.read_excel(file3, header=None, skiprows=2, usecols=[5, 7], names=['表1考号', '表2考号'], dtype=str)
+
+    # 清理数据：去除考号对应关系表中不存在的考号
+    df_mapping = df_mapping.dropna()
+    df_mapping = df_mapping[df_mapping['表1考号'].isin(df1['考号']) & df_mapping['表2考号'].isin(df2['考号'])]
+    # 合并数据
+    merged_df1 = pd.merge(df_mapping, df1[['考号', '班级', '姓名', '总分', '校排名']], left_on='表1考号',
+                          right_on='考号')
+    merged_df2 = pd.merge(df_mapping, df2[['考号', '总分', '校排名']], left_on='表2考号', right_on='考号')
+    # 选择和重命名列
+    result = merged_df1[['班级', '姓名', '表1考号', '总分', '校排名']].copy()
+    result.rename(columns={'总分': '表1总分', '校排名': '表1校排名'}, inplace=True)
+    result['表2考号'] = merged_df2['表2考号']
+    result['表2总分'] = merged_df2['总分']
+    result['表2校排名'] = merged_df2['校排名']
+
+    # 计算进步速度，保留两位小数,round(2)方法可以省略，后续百分号处理同样有四舍五入过程。
+    result['进步速度'] = ((result['表1校排名'] - result['表2校排名']) / result['表1校排名'] * 100).round(2)
+
+    # 按进步速度降序排序
+    result = result.sort_values(by='进步速度', ascending=False)
+    # 添加速度排名列
+    result['速度排名'] = result['进步速度'].rank(method='min', ascending=False).astype(int)
+
+    # 将进步速度转换为带百分号的字符串格式，在数值上具有标准四舍五入原则
+    result['进步速度'] = result['进步速度'].apply(lambda x: f"{x:.2f}%")
+    # 保存到新的Excel文件
+    result.to_excel('进步之星.xlsx', index=False)
+
+    return result
+
+
 if __name__ == '__main__':
-    excel_file = '2023年11月高一期中班级成绩.xlsx'
-    generate_honor_table(excel_file)
-    modify_format()
+    # 上次考试成绩
+    file1 = '2023年10月高一联考班级成绩.xlsx'
+    # 本次考试成绩
+    file2 = '2023年11月高一期中班级成绩.xlsx'
+    # 考号对应表
+    file3 = '23.11期中参考名单.xlsx'
+    # 生成光荣榜
+    generate_honor_table(file1, file2, file3)
+    # 格式化光荣榜
+    # modify_format()
