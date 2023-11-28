@@ -1,4 +1,5 @@
 # 工资短信生成
+# 工资明细表中必须包含应发合计、应扣合计、实发工资三列。
 import pandas as pd
 
 
@@ -26,17 +27,17 @@ def read_excel(file1, file2):
     columns = salary_details_df.columns.tolist()
     start_index = columns.index('姓名') + 1
     end_index = columns.index('应发合计')
-    earning_titles = columns[start_index:end_index]
+    earning_titles_d = columns[start_index:end_index]
 
     deduction_start_index = columns.index('应发合计') + 1
     deduction_end_index = columns.index('应扣合计')
-    deduction_titles = columns[deduction_start_index:deduction_end_index]
+    deduction_titles_d = columns[deduction_start_index:deduction_end_index]
 
-    # 合并通讯录和工资明细表格
-    merged_df = pd.merge(contacts_df, salary_details_df, on='姓名', how='right')
+    # 合并通讯录和工资明细表格,右链接保留工资明细中的所有条目
+    merged_df_d = pd.merge(contacts_df, salary_details_df, on='姓名', how='right')
     # 替换 NaN 值为 0
-    merged_df = merged_df.fillna(0)
-    return merged_df, earning_titles, deduction_titles
+    merged_df_d = merged_df_d.fillna(0)
+    return merged_df_d, earning_titles_d, deduction_titles_d
 
 
 # 生成工资条文本
