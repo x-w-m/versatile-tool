@@ -49,9 +49,10 @@ def page_format():
     for i, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=2):
         current_class = row[0]  # 班级是每行的第一列
         if last_class and current_class != last_class:
-            sheet.row_breaks.append(Break(id=i - 1))
+            sheet.row_breaks.append(Break(id=i))
         last_class = current_class
     print_format(sheet)
+
     # 处理“考室座次表”
     sheet = workbook["考室座次表"]
     # 添加标题行
@@ -60,7 +61,7 @@ def page_format():
     for i, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=2):
         current_room = row[5]  # 考室号是每行的第六列
         if last_room and current_room != last_room:
-            sheet.row_breaks.append(Break(id=i - 1))
+            sheet.row_breaks.append(Break(id=i))
         last_room = current_room
     print_format(sheet)
     # 保存更改
