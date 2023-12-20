@@ -6,7 +6,7 @@ import pandas as pd
 # 读取并合并数据
 def read_excel(file1, file2):
     # 读取通讯录表格
-    contacts_df = pd.read_excel(file1, usecols=['姓名', '联系方式'])
+    contacts_df = pd.read_excel(file1, usecols=['姓名', '联系方式'], dtype=str)
 
     # 读取工资明细表格
     salary_details_df = pd.read_excel(file2, dtype=str)
@@ -58,9 +58,9 @@ def generate_payslip(name, contact, details, month_d, earning_titles_d, deductio
 
 
 if __name__ == '__main__':
-    month = 9
-    gzmx = f"{month}月工资明细.xlsx"
-    txl = "通讯录.xlsx"
+    month = 12
+    gzmx = f"E:/隆回/隆回一中/工资短信/工资/23年{month}月工资.xlsx"
+    txl = "E:/隆回/隆回一中/工资短信/通讯录/通讯录.xlsx"
     merged_df, earning_titles, deduction_titles = read_excel(txl, gzmx)
     # 对每位员工生成工资条
     payslip_data = [generate_payslip(row['姓名'], row['联系方式'], row, month, earning_titles, deduction_titles)
