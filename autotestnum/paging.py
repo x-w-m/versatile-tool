@@ -41,7 +41,7 @@ def page_format():
     # 处理“考生去向表”
     sheet = workbook["考生去向表"]
     # 标题行
-    columns = ["班级", "姓名", "科目组", "分数", "考生号", "考室号", "座位号", "楼层", "教室"]
+    columns = ["班级", "姓名", "科目组", "分数", "考号", "考室号", "座位号", "楼层", "教室"]
     # 假设 worksheet 是您的工作表对象
     add_big_title(sheet, "考生去向表", columns)
     last_class = None

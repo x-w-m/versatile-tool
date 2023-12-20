@@ -1,7 +1,7 @@
 # 自动编排考号
 # 需准备考室安排表及参考名单表两个表。
 # 考室安排表需要有三列：考室号、教室、楼层、人数、科目组。
-# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成四列：考生号、考室号、座位号、楼层、教室。
+# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成四列：考号、考室号、座位号、楼层、教室。
 import sys
 
 # 导入所需的库
@@ -16,7 +16,7 @@ def mode_for_one():
 
     # 按照科目组和分数对学生进行排序
     df_student.sort_values(by=["科目组", "分数"], ascending=[True, False], inplace=True)
-    kshp = input("请输入考生号前缀：")
+    kshp = input("请输入考号前缀：")
     # 定义一个列表，用于保存已经编排好的考生信息。
     rows = []
     # 新建一个字典，用于跟踪每个考室已经分配的最后一个座位号
@@ -53,7 +53,7 @@ def mode_for_one():
                 # 对r所做的修改不会反映到原始的DataFrame对象df_student_room中。
                 # 想要修改原始的DataFrame对象，可以使用.loc[]方法来定位行和列，并直接修改DataFrame对象中的值。
                 # 或者将被修改的行“r”保存到列表中，最后将其转换为新的DataFrame对象。
-                r["考生号"] = kshp + str(room_number).zfill(2) + str(seat_number).zfill(2)  # 考号由“1000”、考室号、座位号拼接而成
+                r["考号"] = kshp + str(room_number).zfill(2) + str(seat_number).zfill(2)  # 考号由“1000”、考室号、座位号拼接而成
                 r["考室号"] = str(room_number).zfill(2)
                 r["座位号"] = str(seat_number).zfill(2)  # 座位号用两位数表示，不足补零
                 r["楼层"] = room_position
@@ -66,7 +66,7 @@ def mode_for_one():
                 # df_student_room.loc[i, "座位号"] = str(seat_number).zfill(2)
                 # df_student_room.loc[i, "考室号"] = str(room_number).zfill(2)
                 # # 考号由“1000”、考室号、座位号拼接而成
-                # df_student_room.loc[i, "考生号"] = "1000" + str(room_number).zfill(2) + str(seat_number).zfill(2)
+                # df_student_room.loc[i, "考号"] = "1000" + str(room_number).zfill(2) + str(seat_number).zfill(2)
 
                 seat_number += 1
                 # 将编排后的行添加到列表中
@@ -80,12 +80,12 @@ def mode_for_one():
 
     # 将rows列表转换为DataFrame对象，用于存储最终的结果。
     df_result = pd.DataFrame(rows,
-                             columns=["班级", "姓名", "科目组", "分数", "考生号", "考室号", "座位号", "楼层", "教室"],
+                             columns=["班级", "姓名", "科目组", "分数", "考号", "考室号", "座位号", "楼层", "教室"],
                              dtype=str)
 
     # 将结果按照班级、考号进行排序，并重置索引
     # inplace=True意味着排序操作将直接在原始的 df_result 对象上进行，默认为False，会返回新的DataFrame
-    df_result.sort_values(by=["班级", "考生号"], inplace=True)
+    df_result.sort_values(by=["班级", "考号"], inplace=True)
     df_result.reset_index(drop=True, inplace=True)
 
     # 创建一个ExcelWriter对象
@@ -93,8 +93,8 @@ def mode_for_one():
         # 保存“考生去向表”为第一个工作表
         df_result.to_excel(writer, sheet_name="考生去向表", index=False)
 
-        # 对df_result根据考生号进行排序，为创建第二个工作表做准备
-        df_seating = df_result.sort_values(by="考生号")
+        # 对df_result根据考号进行排序，为创建第二个工作表做准备
+        df_seating = df_result.sort_values(by="考号")
         df_seating.reset_index(drop=True, inplace=True)
 
         # 保存排序后的数据为第二个工作表，这里命名为“考室座次表”
@@ -117,7 +117,7 @@ def generate_template(directory="模板文件"):
 
     # 创建参考名单表模板
     df_student_template = pd.DataFrame(
-        columns=["班级", "姓名", "科目组", "分数", "考生号", "考室号", "座位号", "楼层", "教室"])
+        columns=["班级", "姓名", "科目组", "分数", "考号", "考室号", "座位号", "楼层", "教室"])
     student_template_path = os.path.join(directory, "参考名单表模板.xlsx")
     df_student_template.to_excel(student_template_path, index=False)
 
@@ -130,9 +130,9 @@ def auto_num():
     init()  # 初始化colorama
     # 使用提示
     print("# 自动编排考号")
-    print("# 需准备\"考室安排表.xlsx\"及\"参考名单表.xlsx\"两个表。请确保文件名和扩展名与要求的一致。")
+    print("# 需准备\"考室安排表.xlsx\"及\"参考名单表.xlsx\"两个文件，与本程序.exe文件同目录。")
     print("# 考室安排表需要有三列：考室号、楼层、人数、科目组。混合考室不要使用合并单元格。")
-    print("# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成三列：考生号、考室号、座位号、楼层、教室。")
+    print("# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成五列：考号、考室号、座位号、楼层、教室。")
     print(
         Fore.RED + "#请确保文件名和扩展名与要求的一致；表格标题包含上面指出的标题，名称需一致，顺序随意；科目组不能为空。" + Style.RESET_ALL)
     # 模式选择
