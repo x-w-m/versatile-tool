@@ -87,7 +87,7 @@ def generate_honor_table(file1, file2, file3):
     jinbuzhixing = jinbupaiming(file1, file2, file3)
 
     # 创建一个 ExcelWriter 对象，指定要保存的文件名
-    writer = pd.ExcelWriter(file2.split('.')[0] + '光荣榜.xlsx')
+    writer = pd.ExcelWriter(file2.split('/')[-1].split('.')[0] + '光荣榜.xlsx')
     top_52.to_excel(writer, sheet_name='浪尖起舞', index=False)
     top_1000.to_excel(writer, sheet_name="总分优胜", index=False)
     jinbuzhixing.to_excel(writer, sheet_name='进步速度排名', index=False)
@@ -98,9 +98,9 @@ def generate_honor_table(file1, file2, file3):
 
 
 # 为表格设置单元格格式
-def modify_format():
+def modify_format(file):
     # 加载Excel文件
-    wb = load_workbook('光荣榜.xlsx')
+    wb = load_workbook(file)
 
     # 设置字体和文字样式
     font = Font(name='微软雅黑', size=12, color='000000', bold=False)
@@ -131,7 +131,7 @@ def modify_format():
                     # cell.fill = fill  # 设置填充颜色
 
     # 保存并关闭Excel文件
-    wb.save('光荣榜.xlsx')
+    wb.save(file)
     wb.close()
 
 
@@ -140,7 +140,7 @@ def jinbupaiming(file1, file2, file3):
     # 定义列名
     columns_scores = ['班级', '姓名', '考号', '总分', '班排名', '校排名', '语文', '数学', '外语', '物理', '化学',
                       '生物', '政治', '历史', '地理']
-    # 读取数据，指定列名
+    # 读取数据，跳过标题行，指定列名或有效数据列
     df1 = pd.read_excel(file1, header=None, skiprows=3, names=columns_scores, dtype={'考号': str})
     df2 = pd.read_excel(file2, header=None, skiprows=3, names=columns_scores, dtype={'考号': str})
     df_mapping = pd.read_excel(file3, header=None, skiprows=2, usecols=[5, 7], names=['表1考号', '表2考号'], dtype=str)
@@ -177,11 +177,11 @@ def jinbupaiming(file1, file2, file3):
 
 if __name__ == '__main__':
     # 上次考试成绩
-    file1 = '2023年10月高一联考班级成绩.xlsx'
+    file1 = './班级成绩/2023年11月高一期中班级成绩.xlsx'
     # 本次考试成绩
-    file2 = '2023年11月高一期中班级成绩.xlsx'
+    file2 = './班级成绩/2023年12月高一联考班级成绩.xlsx'
     # 考号对应表
-    file3 = '23.11期中参考名单.xlsx'
+    file3 = './参考名单/23.12月考参考名单.xlsx'
     # 生成光荣榜
     generate_honor_table(file1, file2, file3)
     # 格式化光荣榜

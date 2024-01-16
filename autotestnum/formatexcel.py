@@ -4,7 +4,6 @@ from openpyxl.utils import get_column_letter
 
 
 def excel_format():
-    global cell, cell
     workbook = load_workbook("考生去向表.xlsx")
     # 设置边框样式
     thin_border = Border(left=Side(style='thin'),
@@ -16,7 +15,7 @@ def excel_format():
         worksheet = workbook[sheet_name]
 
         col_width_ratios = [4.0, 6, 5, 4.0, 7, 5, 5, 6, 6]
-        first_col_width = 8  # 第一列宽度为7
+        first_col_width = 8  # 第一列宽度为8
 
         # 设置列宽
         for idx, ratio in enumerate(col_width_ratios, start=1):
@@ -43,5 +42,3 @@ def excel_format():
     # 保存更改
     workbook.save("考生去向表_格式调整.xlsx")
     print("调整后的表格已保存到“考生去向表_格式调整.xlsx”文件中。")
-
-

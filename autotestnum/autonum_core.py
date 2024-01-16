@@ -49,6 +49,8 @@ def mode_for_one():
             # 给每个学生分配座位号，并生成考号
             seat_number = start_seat_number  # 设置本次循环开始时的座位号。
             for i, r in df_student_room.iterrows():
+                # 添加原始索引，用于保留原来顺序
+                r["原始索引"] = i
                 # 在迭代过程中，r是一个Series对象，它是从df_student_room中复制出来的一行数据，
                 # 对r所做的修改不会反映到原始的DataFrame对象df_student_room中。
                 # 想要修改原始的DataFrame对象，可以使用.loc[]方法来定位行和列，并直接修改DataFrame对象中的值。
@@ -80,16 +82,20 @@ def mode_for_one():
 
     # 将rows列表转换为DataFrame对象，用于存储最终的结果。
     df_result = pd.DataFrame(rows,
-                             columns=["班级", "姓名", "科目组", "分数", "考号", "考室号", "座位号", "楼层", "教室"],
+                             columns=["原始索引", "班级", "姓名", "科目组", "分数", "考号", "考室号", "座位号", "楼层",
+                                      "教室"],
                              dtype=str)
-
-    # 将结果按照班级、考号进行排序，并重置索引
-    # inplace=True意味着排序操作将直接在原始的 df_result 对象上进行，默认为False，会返回新的DataFrame
-    df_result.sort_values(by=["班级", "考号"], inplace=True)
-    df_result.reset_index(drop=True, inplace=True)
+    df_result['原始索引'] = df_result['原始索引'].astype(int)
+    df_result.sort_values(by=["原始索引"], inplace=True)
+    df_result.to_excel("编排结果_保留顺序.xlsx", index=False)
+    df_result.drop(columns=["原始索引"], inplace=True)
 
     # 创建一个ExcelWriter对象
     with pd.ExcelWriter("考生去向表.xlsx") as writer:
+        # 将结果按照班级、考号进行排序，并重置索引
+        # inplace=True意味着排序操作将直接在原始的 df_result 对象上进行，默认为False，会返回新的DataFrame
+        df_result.sort_values(by=["班级", "考号"], inplace=True)
+        df_result.reset_index(drop=True, inplace=True)
         # 保存“考生去向表”为第一个工作表
         df_result.to_excel(writer, sheet_name="考生去向表", index=False)
 
