@@ -1,3 +1,4 @@
+# 解析从官网获取到的评分标准，保存为xlsx文件
 from lxml import html
 import pandas as pd
 

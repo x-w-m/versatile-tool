@@ -1,3 +1,4 @@
+# 对学生体测数据无法识别的部分进行数据清洗
 import random
 import re
 

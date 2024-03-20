@@ -58,8 +58,8 @@ def generate_payslip(name, contact, details, month_d, earning_titles_d, deductio
 
 
 if __name__ == '__main__':
-    month = 12
-    gzmx = f"E:/隆回/隆回一中/工资短信/工资/23年{month}月工资.xlsx"
+    month = 1
+    gzmx = f"E:/隆回/隆回一中/工资短信/工资/24年{month}月工资.xlsx"
     txl = "E:/隆回/隆回一中/工资短信/通讯录/通讯录.xlsx"
     merged_df, earning_titles, deduction_titles = read_excel(txl, gzmx)
     # 对每位员工生成工资条

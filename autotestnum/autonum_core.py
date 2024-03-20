@@ -87,11 +87,11 @@ def mode_for_one():
                              dtype=str)
     df_result['原始索引'] = df_result['原始索引'].astype(int)
     df_result.sort_values(by=["原始索引"], inplace=True)
-    df_result.to_excel("编排结果_保留顺序.xlsx", index=False)
+    df_result.to_excel("编排结果/编排结果_保留顺序.xlsx", index=False)
     df_result.drop(columns=["原始索引"], inplace=True)
 
-    # 创建一个ExcelWriter对象
-    with pd.ExcelWriter("考生去向表.xlsx") as writer:
+    # 创建一个ExcelWriter对象，使用with语句管理上下文，无需手动调用close方法关闭文件。
+    with pd.ExcelWriter("考生去向表/考生去向表.xlsx") as writer:
         # 将结果按照班级、考号进行排序，并重置索引
         # inplace=True意味着排序操作将直接在原始的 df_result 对象上进行，默认为False，会返回新的DataFrame
         df_result.sort_values(by=["班级", "考号"], inplace=True)
@@ -106,7 +106,7 @@ def mode_for_one():
         # 保存排序后的数据为第二个工作表，这里命名为“考室座次表”
         df_seating.to_excel(writer, sheet_name="考室座次表", index=False)
 
-    print("数据已保存至'考生去向表.xlsx'，包含'考生去向表'和'考室座次表'两个工作表。")
+    print("数据已保存至“考生去向表”目录下'考生去向表.xlsx'，包含'考生去向表'和'考室座次表'两个工作表。")
 
 
 def generate_template(directory="模板文件"):
@@ -135,10 +135,12 @@ def generate_template(directory="模板文件"):
 def auto_num():
     init()  # 初始化colorama
     # 使用提示
-    print("# 自动编排考号")
+    print("# 自动编排考号控制台版本 V1.2")
     print("# 需准备\"考室安排表.xlsx\"及\"参考名单表.xlsx\"两个文件，与本程序.exe文件同目录。")
-    print("# 考室安排表需要有三列：考室号、楼层、人数、科目组。混合考室不要使用合并单元格。")
+    print("# 考室安排表需要有三列：考室号、楼层、人数、科目组。混合考室每个科目组占一行。")
     print("# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成五列：考号、考室号、座位号、楼层、教室。")
+    print(
+        "# 对考室顺序和考生顺序没要求，即不需要提前排序。若要指定班级排到指定考室请同时对班级和考室的科目组进行重命名，如“物化生1”。")
     print(
         Fore.RED + "# 请确保文件名和扩展名与要求的一致；表格标题包含上面指出的标题，名称需一致，顺序随意；科目组不能为空。" + Style.RESET_ALL)
     # 模式选择

@@ -1,4 +1,5 @@
 # 成绩分析——光荣榜，适用于未分科场景
+# 需准备班级成绩表和参考名单表
 # 读取Excel表格
 import pandas as pd
 from openpyxl import load_workbook
@@ -147,20 +148,29 @@ def jinbupaiming(file1, file2, file3):
 
     # 清理数据：去除考号对应关系表中不存在的考号
     df_mapping = df_mapping.dropna()
+    # 保留实际参考考号
     df_mapping = df_mapping[df_mapping['表1考号'].isin(df1['考号']) & df_mapping['表2考号'].isin(df2['考号'])]
     # 合并数据
     merged_df1 = pd.merge(df_mapping, df1[['考号', '班级', '姓名', '总分', '校排名']], left_on='表1考号',
                           right_on='考号')
-    merged_df2 = pd.merge(df_mapping, df2[['考号', '总分', '校排名']], left_on='表2考号', right_on='考号')
+    merged_df2 = pd.merge(merged_df1, df2[['考号', '总分', '校排名']], left_on='表2考号', right_on='考号',
+                          suffixes=("_表一", "_表二"))
     # 选择和重命名列
-    result = merged_df1[['班级', '姓名', '表1考号', '总分', '校排名']].copy()
-    result.rename(columns={'总分': '表1总分', '校排名': '表1校排名'}, inplace=True)
-    result['表2考号'] = merged_df2['表2考号']
-    result['表2总分'] = merged_df2['总分']
-    result['表2校排名'] = merged_df2['校排名']
-
+    # result = merged_df1[['班级', '姓名', '表1考号', '总分', '校排名']].copy()
+    # result.rename(columns={'总分': '表1总分', '校排名': '表1校排名'}, inplace=True)
+    # result['表2考号'] = merged_df2['表2考号']
+    # result['表2总分'] = merged_df2['总分']
+    # result['表2校排名'] = merged_df2['校排名']
     # 计算进步速度，保留两位小数,round(2)方法可以省略，后续百分号处理同样有四舍五入过程。
-    result['进步速度'] = ((result['表1校排名'] - result['表2校排名']) / result['表1校排名'] * 100).round(2)
+    # result['进步速度'] = ((result['表1校排名'] - result['表2校排名']) / result['表1校排名'] * 100).round(2)
+
+    # 创建新的副本，避免修改影响到源数据
+    result = merged_df2[
+        ['班级', '姓名', '考号_表一', '总分_表一', '校排名_表一', '考号_表二', '总分_表二', '校排名_表二']].copy()
+    print(merged_df1.head())
+    print(merged_df2.head())
+    # 计算进步速度，保留两位小数,round(2)方法可以省略，后续百分号处理同样有四舍五入过程。
+    result['进步速度'] = ((result['校排名_表一'] - result['校排名_表二']) / result['校排名_表一'] * 100).round(2)
 
     # 按进步速度降序排序
     result = result.sort_values(by='进步速度', ascending=False)
@@ -177,11 +187,11 @@ def jinbupaiming(file1, file2, file3):
 
 if __name__ == '__main__':
     # 上次考试成绩
-    file1 = './班级成绩/2023年11月高一期中班级成绩.xlsx'
+    file1 = './班级成绩/2023年12月高一联考班级成绩.xlsx'
     # 本次考试成绩
-    file2 = './班级成绩/2023年12月高一联考班级成绩.xlsx'
+    file2 = './班级成绩/2024年01月高一期末班级成绩.xlsx'
     # 考号对应表
-    file3 = './参考名单/23.12月考参考名单.xlsx'
+    file3 = './参考名单/24.01期末参考名单.xlsx'
     # 生成光荣榜
     generate_honor_table(file1, file2, file3)
     # 格式化光荣榜
