@@ -7,8 +7,8 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.units import cm
 
 # 注册微软雅黑字体
-pdfmetrics.registerFont(TTFont('微软雅黑', 'msyh.ttc'))
-pdfmetrics.registerFont(TTFont('微软雅黑粗体', 'msyhbd.ttc'))
+pdfmetrics.registerFont(TTFont('微软雅黑', '字体文件/msyh.ttc'))
+pdfmetrics.registerFont(TTFont('微软雅黑粗体', '字体文件/msyhbd.ttc'))
 
 # 读取Excel文件
 df = pd.read_excel('考生去向表.xlsx', sheet_name='考生去向表')

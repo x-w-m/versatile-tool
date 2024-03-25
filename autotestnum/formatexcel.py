@@ -31,9 +31,9 @@ def excel_format(file_path):
             for cell in row:
                 # 设置字体
                 if cell.row == 1:  # 标题行
-                    cell.font = Font(name='微软雅黑', size=12)
+                    cell.font = Font(name='微软雅黑', size=13, bold=True)
                 else:  # 数据行
-                    cell.font = Font(name='微软雅黑', size=11)
+                    cell.font = Font(name='微软雅黑', size=12)
 
                 # 设置边框
                 cell.border = thin_border

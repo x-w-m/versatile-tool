@@ -10,12 +10,13 @@ from colorama import init, Fore, Style
 
 
 def mode_for_one():
+    print("正在进行考号编排......")
     # 读取两个excel文件中的数据，存储为pandas的DataFrame对象
     df_room = pd.read_excel("考室安排表.xlsx")  # 考室安排表
     df_student = pd.read_excel("参考名单表.xlsx", dtype=str)  # 参考名单表
 
-    # 按照科目组和分数对学生进行排序
-    df_student.sort_values(by=["科目组", "分数"], ascending=[True, False], inplace=True)
+    # 按照科目组和分数对学生进行排序,使用稳定的归并排序，不改变相同值的相对顺序
+    df_student.sort_values(by=["科目组", "分数"], ascending=[True, False], kind="mergesort", inplace=True)
     kshp = input("请输入考号前缀：")
     # 定义一个列表，用于保存已经编排好的考生信息。
     rows = []
@@ -85,6 +86,11 @@ def mode_for_one():
                              columns=["原始索引", "班级", "姓名", "科目组", "分数", "考号", "考室号", "座位号", "楼层",
                                       "教室"],
                              dtype=str)
+    print("数据编排结束。\n正在处理特殊科目组。。。")
+    # 将“科目组”列中的数据进行转换操纵，去除内容中的数字。
+    df_result["科目组"] = df_result["科目组"].str.replace(r"\d+", "", regex=True)
+    print(Fore.RED + "已去除特殊科目组中的数字。" + Style.RESET_ALL)
+
     df_result['原始索引'] = df_result['原始索引'].astype(int)
     df_result.sort_values(by=["原始索引"], inplace=True)
     df_result.to_excel("编排结果/编排结果_保留顺序.xlsx", index=False)

@@ -18,6 +18,9 @@ def add_big_title(worksheet, title, col_num):
     big_title_cell.border = Border(bottom=Side(style='thin'))
     big_title_cell.alignment = Alignment(horizontal='center', vertical='center')
 
+    # 需要重新设置最后一行行高
+    worksheet.row_dimensions[worksheet.max_row].height = 22
+
 
 # 打印设置
 def print_format(for_sheet):
@@ -61,7 +64,7 @@ def page_format():
     # 处理“考室座次表”
     sheet = workbook["考室座次表"]
     # 添加标题行
-    add_big_title(sheet, "考室座次表", columns)
+    add_big_title(sheet, "考室座次表", len(columns))
     last_room = None
     # start=2，设置enumerate的起始值为2，不是说跳过第一个元素。目的是保持i与表格行索引对齐
     for i, row in enumerate(sheet.iter_rows(min_row=3, values_only=True), start=2):
@@ -82,7 +85,7 @@ def one_page_print(for_sheet):
     # 设置打印格式
     # 设置页边距（单位：英寸）
     for_sheet.page_margins.top = 1.5 / 2.54  # 上边距1.5厘米
-    for_sheet.page_margins.bottom = 1 / 2.54  # 下边距1厘米
+    for_sheet.page_margins.bottom = 0.6 / 2.54  # 下边距1厘米
     for_sheet.page_margins.left = 1.5 / 2.54  # 左边距1.5厘米
     for_sheet.page_margins.right = 1.5 / 2.54  # 右边距1.5厘米
     for_sheet.page_margins.header = 0.8 / 2.54
@@ -90,6 +93,8 @@ def one_page_print(for_sheet):
     for_sheet.page_setup.fitToPage = 1
     for_sheet.page_setup.fitToHeight = 1
     for_sheet.page_setup.fitToWidth = 1
+    # 设置纸张大小为A4
+    for_sheet.page_setup.paperSize = for_sheet.PAPERSIZE_A4
     # 水平居中
     for_sheet.print_options.horizontalCentered = True
     # 添加打印标题（第一行和第二行）
@@ -97,9 +102,9 @@ def one_page_print(for_sheet):
 
 
 # 创建一个方法，打开文件，遍历文件中所有表格，对每个表格进行打印格式设置
-def page_format1(file_path, big_title):
+def page_format_cf(file_path, big_title):
     # 小标题行
-    columns = ["班级", "姓名", "科目组", "分数", "考号", "考室号", "座位号", "楼层", "教室"]
+    columns = ["年级", "班级", "姓名", "科目组", "考号", "考室号", "座位号", "楼层", "教室"]
     # 加载工作簿
     workbook = load_workbook(file_path)
     # 遍历所有工作表
@@ -113,4 +118,4 @@ def page_format1(file_path, big_title):
         sheet.oddHeader.right.size = 22
     # 保存更改
     workbook.save(file_path)
-    print("文件：“" + file_path + "”格式调整完成。")
+    print("文件：“" + file_path + "”打印格式调整完成。")
