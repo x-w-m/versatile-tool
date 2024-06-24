@@ -45,7 +45,7 @@ def page_format():
     sheet = workbook["考生去向表"]
     # 标题行
     columns = ["班级", "姓名", "科目组", "分数", "考号", "考室号", "座位号", "楼层", "教室"]
-    # 假设 worksheet 是您的工作表对象
+    # 添加大标题
     add_big_title(sheet, "考生去向表", len(columns))
     last_class = None
     # 算上大标题，从第三行开始遍历（min_row=3），避免标题被单独分成一页

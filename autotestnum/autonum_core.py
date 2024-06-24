@@ -34,11 +34,11 @@ def mode_for_one():
         for index, room_row in df_room_group.iterrows():
             # 获取该考室的编号和人数
             room_number = room_row["考室号"]
-            room = room_row["教室"]
             room_position = room_row["楼层"]
+            room = room_row["教室"]
             room_size = room_row["人数"]
 
-            # 如果考室号在tracker中没有记录，说明是新的考室或者新的科目组的开始，座位号从1开始
+            # 如果考室号在tracker中没有记录，说明是新的考室或者新的科目组的开始，初始化座位号为0，下一步会加1
             if room_number not in room_seat_tracker:
                 room_seat_tracker[room_number] = 0
 
@@ -56,24 +56,28 @@ def mode_for_one():
                 # 对r所做的修改不会反映到原始的DataFrame对象df_student_room中。
                 # 想要修改原始的DataFrame对象，可以使用.loc[]方法来定位行和列，并直接修改DataFrame对象中的值。
                 # 或者将被修改的行“r”保存到列表中，最后将其转换为新的DataFrame对象。
-                r["考号"] = kshp + str(room_number).zfill(2) + str(seat_number).zfill(2)  # 考号由“1000”、考室号、座位号拼接而成
-                r["考室号"] = str(room_number).zfill(2)
-                r["座位号"] = str(seat_number).zfill(2)  # 座位号用两位数表示，不足补零
+                temp_ksh = str(room_number).zfill(2)  # 考室号用两位数表示，不足补零
+                temp_zwh = str(seat_number).zfill(2)  # 座位号
+                r["考号"] = kshp + temp_ksh + temp_zwh  # 考号由前缀、考室号、座位号拼接而成
+                r["考室号"] = temp_ksh
+                r["座位号"] = temp_zwh
                 r["楼层"] = room_position
                 r["教室"] = room
 
+                seat_number += 1
+                # 将编排后的行添加到列表中，rows是Series对象的列表，每个Series带有索引。
+                rows.append(r)
+
                 # 使用.loc[]方法来定位行和列，从而直接修改DataFrame对象中的值。
                 # 此方法会出现SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame.
-                # 暂时没有找到解决方法
+                # 原因是df_student_room是由切片操作获取的，可能是一个副本而不是视图，对它进行的修改可能不会影响原始DataFrame
+                # 为了消除不确定性，应该避免使用这种方式。
                 # 座位号用两位数表示，不足补零
                 # df_student_room.loc[i, "座位号"] = str(seat_number).zfill(2)
                 # df_student_room.loc[i, "考室号"] = str(room_number).zfill(2)
                 # # 考号由“1000”、考室号、座位号拼接而成
                 # df_student_room.loc[i, "考号"] = "1000" + str(room_number).zfill(2) + str(seat_number).zfill(2)
 
-                seat_number += 1
-                # 将编排后的行添加到列表中
-                rows.append(r)
             # 将该考室安排好的学生添加到结果中
             # df_result = pd.concat([df_result, df_student_room])
             # 更新该考室的最后一个座位号
@@ -81,7 +85,7 @@ def mode_for_one():
             # 更新已经安排了多少个学生的变量
             count += room_size
 
-    # 将rows列表转换为DataFrame对象，用于存储最终的结果。
+    # 将rows列表转换为DataFrame对象，用于存储最终的结果。columns参数会匹配Series索引，按columns中的顺序调整列的顺序。
     df_result = pd.DataFrame(rows,
                              columns=["原始索引", "班级", "姓名", "科目组", "分数", "考号", "考室号", "座位号", "楼层",
                                       "教室"],
