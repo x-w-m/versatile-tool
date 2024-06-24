@@ -1,4 +1,4 @@
-import django_settings
+# import django_settings
 from django.db import models
 
 
