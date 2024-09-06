@@ -8,7 +8,7 @@ from fuzzywuzzy import process
 df = pd.read_excel('教师信息.xlsx')
 
 # 定义要搜索的目录
-search_dir = "0623"
+search_dir = "0712"
 
 # 使用os.walk遍历所有子目录和文件
 file_names = [os.path.join(root, file) for root, _, files in os.walk(search_dir) for file in files]
@@ -17,7 +17,7 @@ file_names = [os.path.join(root, file) for root, _, files in os.walk(search_dir)
 grade_keywords = ['高一', '高二', '高三']
 subject_keywords = ['语文', '数学', '外语', '英语', '物理', '化学', '生物', '政治', '历史', '体育', '地理', '声乐',
                     '舞蹈', '美术', '信息技术', '通用', '研学']
-group_keywords = ['教研组', '备课组', '培训', '高考班', '学考班']
+group_keywords = ['教研组', '备课组', '实验室', '培训', '高考班', '学考班']
 type_keywords = ['工作总结', '教学总结', '工作计划', '教学计划']
 
 # 从DataFrame中获取名称
