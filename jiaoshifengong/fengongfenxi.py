@@ -195,8 +195,8 @@ def merge(file_dir, file_list):
 
 if __name__ == '__main__':
     # 目录
-    file_dir = "2024年下/"
-    file_name = "2024年下学期教学分工总表.xlsx"
+    file_dir = "2024年下/1014/"
+    file_name = "2024年下学期教学分工总表 - 10.14.xlsx"
     # 年级列表
     grade_list = ["高一", "高二", "高三"]
     for grade in grade_list:
