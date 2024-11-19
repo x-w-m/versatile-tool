@@ -6,7 +6,7 @@ import pandas as pd
 def split_excel():
     df = pd.read_excel("考生去向表/考生去向表.xlsx", sheet_name=0, dtype=str)
     # 插入一列“年级”到第一列，值为“高一”
-    df.insert(0, "年级", "高一")
+    df.insert(0, "年级", "高二")
     # 删除“分数”列
     df.drop(columns=["分数"], inplace=True)
 
