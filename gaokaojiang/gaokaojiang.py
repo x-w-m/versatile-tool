@@ -31,6 +31,8 @@ def analysis_of_college_entrance_examination_awards(file1, file2, file3):
 
         # 重命名列名
         df_gkcj.columns = headers
+        # 删除空白行
+        df_gkcj = df_gkcj.dropna(how='all')
 
         # 获取分数线中对应科目方向的本科线分数
         # 本科线分数
@@ -135,4 +137,7 @@ def find_interval(rank_ranges, coefficients, value):
 
 
 if __name__ == '__main__':
-    analysis_of_college_entrance_examination_awards('23级分班成绩.xlsx', '23级高考成绩.xlsx', '本科分数线.xlsx')
+    file1 = "分班成绩/23级分班成绩.xlsx"
+    file2 = "考试成绩/2024年11月高二期中考试班级赋分成绩.xlsx"
+    file3 = "分数线/2024年11月高二期中考试本科分数线.xlsx"
+    analysis_of_college_entrance_examination_awards(file1, file2, file3)
