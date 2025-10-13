@@ -1,3 +1,4 @@
+#页面格式调整。
 from openpyxl import load_workbook
 from openpyxl.styles import Font, Side, Alignment, Border
 from openpyxl.worksheet.pagebreak import Break
@@ -93,7 +94,7 @@ def one_page_print(for_sheet):
     for_sheet.page_setup.fitToPage = 1
     for_sheet.page_setup.fitToHeight = 1
     for_sheet.page_setup.fitToWidth = 1
-    # 设置纸张大小为A4
+    # 设置页面大小为A4
     for_sheet.page_setup.paperSize = for_sheet.PAPERSIZE_A4
     # 水平居中
     for_sheet.print_options.horizontalCentered = True
