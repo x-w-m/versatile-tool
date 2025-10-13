@@ -8,7 +8,7 @@ from fuzzywuzzy import process
 df = pd.read_excel('教师信息.xlsx')
 
 # 定义要搜索的目录
-search_dir = "0712"
+search_dir = "240916"
 
 # 使用os.walk遍历所有子目录和文件
 file_names = [os.path.join(root, file) for root, _, files in os.walk(search_dir) for file in files]

@@ -178,11 +178,11 @@ def jinbupaiming(file1, file2, file3, sheet_name):
 
 if __name__ == '__main__':
     # 上次考试成绩
-    file1 = './班级成绩/2024年10月高二月考班级赋分成绩.xlsx'
+    file1 = './班级成绩/2024年12月高二月考班级赋分成绩.xlsx'
     # 本次考试成绩
-    file2 = './班级成绩/2024年11月高二期中班级赋分成绩.xlsx'
+    file2 = './班级成绩/2025年01月高二期末班级赋分成绩.xlsx'
     # 考号对应表
-    file3 = './参考名单/24.11期中参考名单.xlsx'
+    file3 = './参考名单/25.01期末参考名单.xlsx'
     # 生成光荣榜
     generate_honor_table(file1, file2, file3)
     # 格式化光荣榜

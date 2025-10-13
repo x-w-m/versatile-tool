@@ -3,10 +3,10 @@ import pandas as pd
 
 
 # 拆分
-def split_excel():
+def split_excel(grade="高二"):
     df = pd.read_excel("考生去向表/考生去向表.xlsx", sheet_name=0, dtype=str)
     # 插入一列“年级”到第一列，值为“高一”
-    df.insert(0, "年级", "高二")
+    df.insert(0, "年级", grade)
     # 删除“分数”列
     df.drop(columns=["分数"], inplace=True)
 
@@ -20,8 +20,8 @@ def split_excel():
             # 使用pandas的to_excel函数将每个新的DataFrame作为一个新的工作表写入Excel文件
             new_df.to_excel(writer, sheet_name=str(value) + " C", index=False)
 
-    # 根据考号排序
-    df = df.sort_values("考号")
+    # 根据考试号及座位号排序，避免使用编号做考号时出现顺序混乱
+    df = df.sort_values(by=['考室号', '座位号'])
     # "考号"列的所有唯一值
     unique_values = df['考室号'].unique()
     # 创建一个新的ExcelWriter对象

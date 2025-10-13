@@ -72,7 +72,7 @@ def read_book(driver, answers):
         a_tag = li.find_element(By.TAG_NAME, "a")
 
         # 获取链接文本
-        link_text = a_tag.text
+        link_text = driver.execute_script("return arguments[0].textContent;", a_tag) # <- 这是新的、可靠的方法
 
         # 判断文本中是否包含 (x/y) 形式的进度标识
         if progress_pattern.search(link_text):
@@ -80,7 +80,7 @@ def read_book(driver, answers):
 
             # 点击链接
             a_tag.click()
-            time.sleep(3)
+            time.sleep(5)
 
             # 获取章节id
             chatpId_element = driver.find_element(By.CLASS_NAME, "chaptId")
@@ -146,8 +146,10 @@ def read_book(driver, answers):
                 # 打印当前题目
                 print(timu)
                 tiku = tiku + timu + "\n\n"
-                # 准备下一个题目
+                # 准备下一
                 j = j + 1
+
+                print(j)
 
             timucanshu = timucanshu + json.dumps(answerDTOList) + "\n"
         else:
@@ -160,9 +162,10 @@ def read_book(driver, answers):
 
 if __name__ == "__main__":
     # 学习列表
-    study_list = ["2024年度《八五普法导读》", "2024 应知应会法律知识导读", "2024省教育厅普法读本"]
+    study_list_2024 = ["2024年度《八五普法导读》", "2024 应知应会法律知识导读", "2024省教育厅普法读本"]
+    study_list = ["2025年度《八五普法读本》", "2025 应知应会法律知识导读", "2024省教育厅普法读本"]
     # 答案列表
-    answer_list = [
+    answer_list_2024 = [
         ['A', 'C', 'B', 'B', 'B', 'A', 'C', 'ABC', 'A', 'A', 'A', 'A', 'A', 'A', 'C', 'B', 'C', 'A', 'C', 'A', 'C',
          'ABC',
          'C', 'ABC', 'ABC', 'C', 'AB', 'B', 'C', 'A', 'ABC', 'B', 'ABC', 'C', 'B', 'AB', 'A', 'AB', 'B', 'A', 'B',
@@ -175,6 +178,23 @@ if __name__ == "__main__":
          'D',
          'C', 'ABD', 'ABCD']
     ]
+    answer_list = [[
+        'A', 'B', 'BC', 'ABC', 'B', 'A', 'ABC', 'ABC', 'C', 'ABC', 'C', 'A', 'ABC',
+        'ABC', 'ABC', 'B', 'C', 'AC', 'ABC', 'A', 'AB', 'BC', 'ABC', 'ABC', 'B',
+        'ABC', 'B', 'ABC', 'ABC', 'ABC', 'A', 'B', 'ABC', 'A', 'B', 'C', 'B', 'ABC',
+        'ABC', 'A', 'C', 'B', 'ABC', 'ABC', 'ABC', 'AB', 'ABC', 'A', 'B', 'ABC',
+        'ABC', 'C', 'ABC', 'ABC', 'ABC', 'A', 'A', 'C', 'ABC', 'ABC'],
+        ['ABC', 'C', 'ABC', 'B', 'A', 'ABC', 'B', 'ABC', 'A', 'ABC',
+         'B', 'ABC', 'A', 'A', 'ABC',
+         'B', 'B', 'AB', 'B', 'ABC', 'BC', 'C', 'C', 'B',
+         'A', 'ABC', 'ABC', 'ABC',
+         'C', 'ABC', 'ABC', 'AC', 'A', 'C', 'B', 'A',
+         'ABC', 'A', 'B', 'ABC'
+         ],
+        ['D', 'A', 'ABC', 'ABC', 'D', 'D', 'AD', 'ABD', 'C', 'D', 'CD', 'AC', 'B', 'B', 'ABCD', 'ABC', 'B', 'D', 'ABCD',
+         'ABCD', 'B', 'D', 'ABCD', 'ABCD', 'B', 'D', 'ABCD', 'ABC', 'D', 'C', 'ABCD', 'ABD', 'A', 'C', 'ABCD', 'AC',
+         'D',
+         'C', 'ABD', 'ABCD']]
 
     # 保存题库，入口函数定义的变量是模块级的全局变量，其他方法定义的是局部变量
     tiku = ''
@@ -193,7 +213,7 @@ if __name__ == "__main__":
 
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
-    driver = login(driver, "17673058592", "000000")
+    driver = login(driver, "18374983544", "000000Qa")
 
     first_handle = driver.current_window_handle
     # 获取必修读本
@@ -203,7 +223,7 @@ if __name__ == "__main__":
         # 获取对应法律读本链接元素
         study = driver.find_element(By.XPATH, f"//a[contains(., '{study_list[i]}')]")
         study.click()
-        time.sleep(5)
+        time.sleep(10)
         # 切换到新标签页
         driver.switch_to.window(driver.window_handles[-1])
         read_book(driver, answers)
@@ -212,11 +232,11 @@ if __name__ == "__main__":
         driver.switch_to.window(first_handle)
 
     # 将题库写入文件
-    with open("题库2.txt", "wt", encoding="UTF-8") as f:
+    with open("题库2025.txt", "wt", encoding="UTF-8") as f:
         f.write(tiku)
 
         # 将题库写入文件
-    with open("答题参数.txt", "wt", encoding="UTF-8") as f:
+    with open("答题参数2025.txt", "wt", encoding="UTF-8") as f:
         f.write(timucanshu)
 
     time.sleep(10)

@@ -83,15 +83,15 @@ def update_class_info(df, teachers_df):
 
 # 分别提取高考班和学考班，并计算数量
 def update_exam_class_info(df, teachers_df):
-    # 判断分工表df中是否有“科目”这一列，如果没有说明是高一，直接退出函数
-    if '科目' not in df.columns:
+    # 判断分工表df中是否有“科目组”这一列，如果没有说明是高一，直接退出函数
+    if '科目组' not in df.columns:
         return teachers_df
 
     # 创建两个新的列'高考班'和'学考班'，并初始化为None
     teachers_df['高考班'] = None
     teachers_df['学考班'] = None
 
-    # 将语文、数学、外语三科的班级列的值复制到它们的高考班列中,其他科目根据
+    # 将语文、数学、外语三科的班级列的值复制到它们的高考班列中,其他科目根据科目组来判断
     for subject in ['语文', '数学', '外语']:
         teachers_df['高考班'] = np.where(
             teachers_df['科目'] == subject,
@@ -103,9 +103,9 @@ def update_exam_class_info(df, teachers_df):
     # 遍历原始DataFrame的每一行
     for index, row in df.iterrows():
         class_name = row['班级']  # 获取'班级'列的值
-        gaokao_subjects_str = row['科目']  # 获取'科目'列的值，即科目组合
+        gaokao_subjects_str = row['科目组']  # 获取'科目组'列的值，即科目组合
         for subject_abbr, subject in gaokao_subjects.items():
-            # 如果'科目'列的值包含某个科目的简写，就把班级添加到对应老师的'高考班'列中
+            # 如果'科目组'列的值包含某个科目的简写，就把班级添加到对应老师的'高考班'列中
             if subject_abbr in gaokao_subjects_str:
                 teacher = row[subject]  # 高考科目一定有安排教师，不需要额外判断。
                 if pd.notna(teachers_df.loc[(teachers_df['教师'] == teacher), '高考班'].iloc[0]):
@@ -195,8 +195,8 @@ def merge(file_dir, file_list):
 
 if __name__ == '__main__':
     # 目录
-    file_dir = "2024年下/1014/"
-    file_name = "2024年下学期教学分工总表 - 10.14.xlsx"
+    file_dir = "2025年下/0915/"
+    file_name = "2025年下学期教学分工总表.xlsx"
     # 年级列表
     grade_list = ["高一", "高二", "高三"]
     for grade in grade_list:

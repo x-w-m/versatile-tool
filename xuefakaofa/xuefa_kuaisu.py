@@ -80,7 +80,10 @@ if __name__ == "__main__":
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
     # 登录
-    driver = login(driver, "1", "000000")
+    #driver = login(driver, "18173906881", "000000")#廖小梅
+    driver = login(driver, "17673058592", "000000")#向云
+    # driver = login(driver, "15873166384", "000000")
+    # driver = login(driver, "13975980636", "000000")
 
     # 登录成功后，获取 cookies
     cookies = driver.get_cookies()
@@ -92,9 +95,9 @@ if __name__ == "__main__":
     for cookie in cookies:
         session.cookies.set(cookie['name'], cookie['value'])
 
-    with open("题目参数.txt", "r") as f:
+    with open("答题参数2025.txt", "r") as f:
         for line in f:
-            time.sleep(0.6)
+            time.sleep(1.15)
             # 每行自带一个换行符，可以使用strip()方法去除。
             print(line.strip())
             if line != "":

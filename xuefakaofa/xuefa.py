@@ -134,21 +134,25 @@ def dati(driver, answers):
 
 if __name__ == "__main__":
     # 学习列表
-    study_list = ["2024年度《八五普法导读》", "2024 应知应会法律知识导读", "2024省教育厅普法读本"]
+    study_list = ["2025年度《八五普法读本》", "2025 应知应会法律知识导读", "2024省教育厅普法读本"]
     # 答案列表
-    answer_list = [
-        ['A', 'C', 'B', 'B', 'B', 'A', 'C', 'ABC', 'A', 'A', 'A', 'A', 'A', 'A', 'C', 'B', 'C', 'A', 'C', 'A', 'C',
-         'ABC',
-         'C', 'ABC', 'ABC', 'C', 'AB', 'B', 'C', 'A', 'ABC', 'B', 'ABC', 'C', 'B', 'AB', 'A', 'AB', 'B', 'A', 'B',
-         'ABC',
-         'B', 'A'],
-        ['A', 'C', 'B', 'C', 'A', 'ABC', 'B', 'ABC', 'A', 'C', 'B', 'A', 'ABC', 'ABC', 'B', 'C', 'ABC', 'C', 'A',
-         'ABC'],
+    answer_list = [[
+        'A', 'B', 'BC', 'ABC', 'B', 'A', 'ABC', 'ABC', 'C', 'ABC', 'C', 'A', 'ABC',
+        'ABC', 'ABC', 'B', 'C', 'AC', 'ABC', 'A', 'AB', 'BC', 'ABC', 'ABC', 'B',
+        'ABC', 'B', 'ABC', 'ABC', 'ABC', 'A', 'B', 'ABC', 'A', 'B', 'C', 'B', 'ABC',
+        'ABC', 'A', 'C', 'B', 'ABC', 'ABC', 'ABC', 'AB', 'ABC', 'ABC', 'A', 'ABC',
+        'ABC', 'C', 'ABC', 'ABC', 'ABC', 'A', 'A', 'C', 'ABC', 'ABC'],
+        ['ABC', 'C', 'ABC', 'B', 'A', 'ABC', 'B', 'ABC', 'A', 'ABC',
+         'B', 'ABC', 'A', 'A', 'ABC',
+         'B', 'B', 'AB', 'B', 'ABC', 'BC', 'C', 'C', 'B',
+         'A', 'ABC', 'ABC', 'ABC',
+         'C', 'ABC', 'ABC', 'AC', 'A', 'C', 'B', 'A',
+         'ABC', 'A', 'B', 'ABC'
+         ],
         ['D', 'A', 'ABC', 'ABC', 'D', 'D', 'AD', 'ABD', 'C', 'D', 'CD', 'AC', 'B', 'B', 'ABCD', 'ABC', 'B', 'D', 'ABCD',
          'ABCD', 'B', 'D', 'ABCD', 'ABCD', 'B', 'D', 'ABCD', 'ABC', 'D', 'C', 'ABCD', 'ABD', 'A', 'C', 'ABCD', 'AC',
          'D',
-         'C', 'ABD', 'ABCD']
-    ]
+         'C', 'ABD', 'ABCD']]
 
     # 保存题库，入口函数定义的变量是模块级的全局变量，其他方法定义的是局部变量
     tiku = ''
@@ -165,7 +169,7 @@ if __name__ == "__main__":
 
     driver = webdriver.Chrome(service=service, options=chrome_options)
 
-    driver = login(driver, "1111", "000000")
+    driver = login(driver, "15873166384", "000000")
 
     first_handle = driver.current_window_handle
     # 获取必修读本

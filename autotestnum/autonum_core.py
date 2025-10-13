@@ -15,9 +15,11 @@ def mode_for_one():
     df_room = pd.read_excel("考室安排表.xlsx")  # 考室安排表
     df_student = pd.read_excel("参考名单表.xlsx", dtype=str)  # 参考名单表
 
+    # 将分数转换为float
+    df_student["分数"] = df_student["分数"].astype(float)
     # 按照科目组和分数对学生进行排序,使用稳定的归并排序，不改变相同值的相对顺序
     df_student.sort_values(by=["科目组", "分数"], ascending=[True, False], kind="mergesort", inplace=True)
-    kshp = input("请输入考号前缀：")
+    kshp = input("请输入考号前缀，输入0表示使用编号作为考号：")
     # 定义一个列表，用于保存已经编排好的考生信息。
     rows = []
     # 新建一个字典，用于跟踪每个考室已经分配的最后一个座位号
@@ -58,7 +60,13 @@ def mode_for_one():
                 # 或者将被修改的行“r”保存到列表中，最后将其转换为新的DataFrame对象。
                 temp_ksh = str(room_number).zfill(2)  # 考室号用两位数表示，不足补零
                 temp_zwh = str(seat_number).zfill(2)  # 座位号
-                r["考号"] = kshp + temp_ksh + temp_zwh  # 考号由前缀、考室号、座位号拼接而成
+
+                # 检测是否需要自定义考号，如果输入“0”则表示不需要自定义考号，使用默认的编号作为考号。
+                if kshp == "0":
+                    r["考号"] = r["编号"]
+                else:
+                    r["考号"] = kshp + temp_ksh + temp_zwh
+
                 r["考室号"] = temp_ksh
                 r["座位号"] = temp_zwh
                 r["楼层"] = room_position
@@ -104,13 +112,13 @@ def mode_for_one():
     with pd.ExcelWriter("考生去向表/考生去向表.xlsx") as writer:
         # 将结果按照班级、考号进行排序，并重置索引
         # inplace=True意味着排序操作将直接在原始的 df_result 对象上进行，默认为False，会返回新的DataFrame
-        df_result.sort_values(by=["班级", "考号"], inplace=True)
+        df_result.sort_values(by=["班级", "考室号", "座位号"], inplace=True)
         df_result.reset_index(drop=True, inplace=True)
         # 保存“考生去向表”为第一个工作表
         df_result.to_excel(writer, sheet_name="考生去向表", index=False)
 
         # 对df_result根据考号进行排序，为创建第二个工作表做准备
-        df_seating = df_result.sort_values(by="考号")
+        df_seating = df_result.sort_values(by=["考室号", "座位号"])
         df_seating.reset_index(drop=True, inplace=True)
 
         # 保存排序后的数据为第二个工作表，这里命名为“考室座次表”
@@ -151,6 +159,8 @@ def auto_num():
     print("# 参考名单表包含基础三列：班级、姓名、科目组、分数；以及待生成五列：考号、考室号、座位号、楼层、教室。")
     print(
         "# 对考室顺序和考生顺序没要求，即不需要提前排序。若要指定班级排到指定考室请同时对班级和考室的科目组进行重命名，如“物化生1”。")
+    print(
+        "# 对于相同科目组的考室，可以通过将指定考室放在前面的方式来实现优先编排该考室。如尖子考室放前面可以将成绩靠前的考生排入该考室。")
     print(
         Fore.RED + "# 请确保文件名和扩展名与要求的一致；表格标题包含上面指出的标题，名称需一致，顺序随意；科目组不能为空。" + Style.RESET_ALL)
     # 模式选择

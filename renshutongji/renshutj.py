@@ -1,20 +1,21 @@
+"""
+各排名段人数统计
+"""
 import pandas as pd
-from pyecharts.charts import Bar
-from pyecharts import options as opts
-import os
+import openpyxl
+from openpyxl.styles import Font, Alignment, Border, Side
 
 # 考试文件和对应的工作表信息
 exam_files = [
     {'file': '考试成绩/2323级分科分班成绩.xlsx', 'sheets': ['物理', '历史'], 'exam_name': '分班'},
     {'file': '考试成绩/2024年10月高二月考班级赋分成绩.xlsx', 'sheets': ['物理', '历史'], 'exam_name': '10月月考'},
     {'file': '考试成绩/2024年11月高二期中考试班级赋分成绩.xlsx', 'sheets': ['物理', '历史'], 'exam_name': '期中考试'},
-    # 添加更多考试信息 {'file': 'exam3.xlsx', 'sheets': ['物理', '历史'], 'exam_name': '考试3'},
+    {'file': '考试成绩/2024年12月高二月考班级赋分成绩.xlsx', 'sheets': ['物理', '历史'], 'exam_name': '12月月考'},
 ]
 
 # 定义列名
 headers = ['班级', '姓名', '考号', '选科', '原始总分', '赋分总分', '班排名', '校排名', '语文', '数学', '外语',
            '选科', '化学原始分', '化学', '生物原始分', '生物', '政治原始分', '政治', '地理原始分', '地理']
-
 
 # 统计函数
 def count_students_in_rank(data, rank_thresholds, rank_col='校排名'):
@@ -24,37 +25,6 @@ def count_students_in_rank(data, rank_thresholds, rank_col='校排名'):
         group_counts = filtered_data.groupby('班级')[rank_col].count()
         results[f'前{rank}名'] = group_counts
     return pd.DataFrame(results)
-
-
-# 动态柱状图生成函数
-def create_bar_chart(data, titile):
-    """
-    创建动态柱状图，支持切换显示不同的项目。
-    :param data: DataFrame，索引为班级，列为项目，值为人数。
-    """
-    # 创建图表对象
-    bar = Bar(init_opts=opts.InitOpts(width="1200px", height="500px"))
-    bar.add_xaxis(data.index.tolist())  # X 轴为班级
-
-    # 添加所有项目
-    for project in data.columns:
-        bar.add_yaxis(
-            series_name=project,
-            y_axis=data[project].tolist()  # 默认只显示第一个项目
-        )
-
-    # 设置全局选项
-    bar.set_global_opts(
-        title_opts=opts.TitleOpts(title=titile),
-        legend_opts=opts.LegendOpts(
-            is_show=True,
-            pos_top="5%",
-            type_="scroll"  # 图例可滚动，适合项目多的情况
-        ),
-        toolbox_opts=opts.ToolboxOpts(),  # 工具栏选项
-    )
-    return bar
-
 
 # 创建一个空的字典，用于存储所有统计结果
 all_statistics = {}
@@ -80,55 +50,60 @@ for exam in exam_files:
 
         # 统计结果
         result = count_students_in_rank(data, rank_thresholds)
-        bar = create_bar_chart(result, f'{exam_name}_{sheet_name}')
-        bar.render(f'charts/{exam_name}_{sheet_name}.html')
         # 将结果存入字典，以方便统一保存
         all_statistics[f'{exam_name}_{sheet_name}'] = result
 
+# 添加阶段人数增减统计
+phase_changes = {}
+exam_names = [exam['exam_name'] for exam in exam_files]
+
+for i in range(1, len(exam_files)):
+    prev_exam = exam_files[i - 1]['exam_name']
+    curr_exam = exam_files[i]['exam_name']
+
+    for sheet_name in exam_files[i]['sheets']:
+        prev_key = f'{prev_exam}_{sheet_name}'
+        curr_key = f'{curr_exam}_{sheet_name}'
+
+        if prev_key in all_statistics and curr_key in all_statistics:
+            prev_data = all_statistics[prev_key]
+            curr_data = all_statistics[curr_key]
+
+            # 对两个阶段的数据对齐
+            prev_data, curr_data = prev_data.align(curr_data, fill_value=0)
+
+            # 计算增减情况
+            changes = curr_data - prev_data
+            phase_changes[f'{curr_exam}_相较_{prev_exam}_{sheet_name}'] = changes
+
 # 保存所有统计结果到一个 Excel 文件
-# output_file = '人数统计.xlsx'
-# with pd.ExcelWriter(output_file) as writer:
-#     for sheet_name, result in all_statistics.items():
-#         result.to_excel(writer, sheet_name=sheet_name)
-#
-# print(f"统计结果已保存到 {output_file}")
+output_file = '人数统计.xlsx'
+with pd.ExcelWriter(output_file, engine='openpyxl') as writer:
+    for sheet_name, result in all_statistics.items():
+        result.to_excel(writer, sheet_name=sheet_name)
 
-import os
+    # 保存增减统计
+    for sheet_name, changes in phase_changes.items():
+        changes.to_excel(writer, sheet_name=sheet_name)
 
-# 获取所有生成的 HTML 文件
-output_directory = "charts/"
-html_files = [f for f in os.listdir(output_directory) if f.endswith(".html")]
+# 设置表格样式
+def set_excel_styles(file_path):
+    wb = openpyxl.load_workbook(file_path)
+    for sheet_name in wb.sheetnames:
+        sheet = wb[sheet_name]
+        for row in sheet.iter_rows():
+            for cell in row:
+                cell.font = Font(name='微软雅黑', size=11)
+                cell.alignment = Alignment(horizontal='center', vertical='center')
+                cell.border = Border(
+                    left=Side(style='thin'),
+                    right=Side(style='thin'),
+                    top=Side(style='thin'),
+                    bottom=Side(style='thin')
+                )
+    wb.save(file_path)
 
+# 应用样式
+set_excel_styles(output_file)
 
-
-for html_file in html_files:
-    file_path = os.path.join(output_directory, html_file)
-
-    with open(file_path, "r", encoding="utf-8") as f:
-        html_content = f.read()
-
-    # 添加 CSS 样式以使图表居中
-    centered_html_content = html_content.replace(
-        '<body >',
-        '<body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">'
-    )
-
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.write(centered_html_content)
-
-print("所有图表已设置为居中显示")
-
-# 创建索引页面
-index_path = os.path.join(output_directory, "index.html")
-with open(index_path, "w", encoding="utf-8") as index_file:
-    index_file.write("<html>\n<head><title>图表索引</title></head>\n<body>\n")
-    index_file.write("<h1>图表索引</h1>\n<ul>\n")
-
-    # 添加每个 HTML 文件的链接
-    for html_file in html_files:
-        link = f'<li><a href="{html_file}" target="_blank">{html_file}</a></li>\n'
-        index_file.write(link)
-
-    index_file.write("</ul>\n</body>\n</html>")
-
-print(f"索引页面已生成，路径为：{index_path}")
+print(f"统计结果已保存到 {output_file}，并设置了样式。")
