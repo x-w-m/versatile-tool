@@ -81,7 +81,8 @@ if __name__ == "__main__":
 
     # 登录
     #driver = login(driver, "18173906881", "000000")#廖小梅
-    driver = login(driver, "17673058592", "000000")#向云
+    # driver = login(driver, "17673058592", "000000")#向云
+    driver = login(driver, "18273967675", "000000")#熊
     # driver = login(driver, "15873166384", "000000")
     # driver = login(driver, "13975980636", "000000")
 
